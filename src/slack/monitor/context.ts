@@ -263,9 +263,7 @@ export function createSlackMonitorContext(params: {
       channel_id: p.channelId,
       thread_ts: p.threadTs,
       status: p.status,
-      ...(p.loadingMessages && p.loadingMessages.length > 0
-        ? { loading_messages: p.loadingMessages }
-        : {}),
+      ...(p.loadingMessages?.length ? { loading_messages: p.loadingMessages } : {}),
     };
     const client = params.app.client as unknown as {
       assistant?: {

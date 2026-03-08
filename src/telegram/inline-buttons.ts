@@ -11,6 +11,6 @@ export function resolveTelegramInlineButtonsScope(_params: {
 
 export function resolveTelegramTargetChatType(
   _target: string,
-): "private" | "group" | "supergroup" | "channel" | undefined {
+): "private" | "group" | "supergroup" | "channel" | "unknown" | undefined {
   return undefined;
 }

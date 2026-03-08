@@ -69,12 +69,10 @@ import type { PluginRuntime } from "./types.js";
 
 // Stub functions for removed channels
 const noop = () => {};
-const noopAsync = () => Promise.resolve();
 const noopProbe = () => Promise.resolve({ ok: false, error: "not supported in hive-gateway" });
 const noopSend = (..._args: unknown[]) =>
   Promise.reject(new Error("channel not supported in hive-gateway"));
 const noopAllowlist = () => [];
-const noopDirectory = () => [];
 
 export function createRuntimeChannel(): PluginRuntime["channel"] {
   return {
@@ -106,7 +104,7 @@ export function createRuntimeChannel(): PluginRuntime["channel"] {
       resolveAgentRoute,
     },
     pairing: {
-      buildPairingReply: () => undefined,
+      buildPairingReply: () => "",
       readAllowFromStore: () => Promise.resolve([]),
       upsertPairingRequest: () => Promise.resolve(),
     },
@@ -150,15 +148,10 @@ export function createRuntimeChannel(): PluginRuntime["channel"] {
     },
     discord: {
       messageActions: discordMessageActions,
-      auditChannelPermissions: noopAsync as never,
-      listDirectoryGroupsLive: noopDirectory as never,
-      listDirectoryPeersLive: noopDirectory as never,
-      probeDiscord: noopProbe as never,
       resolveChannelAllowlist: noopAllowlist as never,
       resolveUserAllowlist: noopAllowlist as never,
       sendMessageDiscord: noopSend as never,
       sendPollDiscord: noopSend as never,
-      monitorDiscordProvider: noop as never,
     },
     slack: {
       listDirectoryGroupsLive: listSlackDirectoryGroupsLive,
@@ -171,31 +164,14 @@ export function createRuntimeChannel(): PluginRuntime["channel"] {
       handleSlackAction,
     },
     telegram: {
-      auditGroupMembership: noopAsync as never,
-      collectUnmentionedGroupIds: noopAsync as never,
-      probeTelegram: noopProbe as never,
-      resolveTelegramToken: (() => undefined) as never,
-      sendMessageTelegram: noopSend as never,
-      sendPollTelegram: noopSend as never,
-      monitorTelegramProvider: noop as never,
       messageActions: telegramMessageActions,
     },
     signal: {
-      probeSignal: noopProbe as never,
       sendMessageSignal: noopSend as never,
-      monitorSignalProvider: noop as never,
       messageActions: signalMessageActions,
     },
-    imessage: {
-      monitorIMessageProvider: noop as never,
-      probeIMessage: noopProbe as never,
-      sendMessageIMessage: noopSend as never,
-    },
-    whatsapp: {
-      sendMessageWhatsApp: noopSend as never,
-      sendPollWhatsApp: noopSend as never,
-      monitorWebChannel: noop as never,
-    } as never,
+    imessage: {} as never,
+    whatsapp: {} as never,
     line: {
       listLineAccountIds: () => [],
       resolveDefaultLineAccountId: () => undefined,

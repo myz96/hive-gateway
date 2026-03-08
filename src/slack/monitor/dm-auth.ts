@@ -42,7 +42,7 @@ export async function authorizeSlackDirectMessage(params: {
       senderId: params.senderId,
       senderIdLine: `Your Slack user id: ${params.senderId}`,
       meta: { name: senderName },
-      upsertPairingRequest: async ({ id, meta }) =>
+      upsertPairingRequest: async ({ id, meta }: { id: string; meta: Record<string, string> }) =>
         await upsertChannelPairingRequest({
           channel: "slack",
           id,
@@ -55,7 +55,7 @@ export async function authorizeSlackDirectMessage(params: {
           `slack pairing request sender=${params.senderId} name=${senderName ?? "unknown"} (${allowMatchMeta})`,
         );
       },
-      onReplyError: (err) => {
+      onReplyError: (err: unknown) => {
         params.log(`slack pairing reply failed for ${params.senderId}: ${String(err)}`);
       },
     });

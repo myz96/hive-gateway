@@ -4,15 +4,26 @@ type DiscordContainerComponents = ConstructorParameters<typeof Container>[0];
 
 const DEFAULT_DISCORD_ACCENT_COLOR = "#5865F2";
 
+type DiscordUiContainerParams = {
+  cfg?: unknown;
+  accountId?: unknown;
+  components: NonNullable<DiscordContainerComponents>;
+};
+
 /**
  * Stub DiscordUiContainer for hive-gateway.
  * Discord is not supported but the class is extended by channel-adapters.
  */
 export class DiscordUiContainer extends Container {
-  constructor(components: DiscordContainerComponents, _params?: { accentColor?: string }) {
+  constructor(
+    params: DiscordContainerComponents | DiscordUiContainerParams,
+    _options?: { accentColor?: string },
+  ) {
+    const components =
+      params && !Array.isArray(params) && "components" in params ? params.components : params;
     super(components);
     this.accentColor = parseInt(
-      (_params?.accentColor ?? DEFAULT_DISCORD_ACCENT_COLOR).replace("#", ""),
+      (_options?.accentColor ?? DEFAULT_DISCORD_ACCENT_COLOR).replace("#", ""),
       16,
     );
   }

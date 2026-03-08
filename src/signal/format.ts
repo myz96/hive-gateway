@@ -8,6 +8,7 @@ export type SignalTextStyleRange = {
 export function markdownToSignalTextChunks(
   _text: string,
   _maxLength?: number,
-): Array<{ text: string; textStyles?: SignalTextStyleRange[] }> {
-  return [{ text: _text }];
+  _options?: { tableMode?: string },
+): Array<{ text: string; styles: SignalTextStyleRange[] }> {
+  return [{ text: _text, styles: [] }];
 }

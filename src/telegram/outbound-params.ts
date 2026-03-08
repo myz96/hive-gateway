@@ -1,5 +1,5 @@
 /** Stub - Telegram not supported in hive-gateway. */
-export function parseTelegramThreadId(_target: string): number | undefined {
+export function parseTelegramThreadId(_target: string | undefined): number | undefined {
   return undefined;
 }
 

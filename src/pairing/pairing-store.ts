@@ -33,3 +33,15 @@ export type PairingRequest = {
   lastSeenAt: string;
   meta?: Record<string, string>;
 };
+
+export async function addChannelAllowFromStoreEntry(_params: {
+  channel: ChannelId;
+  entry: string;
+  accountId?: string;
+}): Promise<void> {}
+
+export async function removeChannelAllowFromStoreEntry(_params: {
+  channel: ChannelId;
+  entry: string;
+  accountId?: string;
+}): Promise<void> {}

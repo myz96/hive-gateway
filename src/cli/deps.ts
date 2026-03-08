@@ -23,7 +23,7 @@ export function createDefaultDeps(): CliDeps {
 }
 
 export function createOutboundSendDeps(deps: CliDeps): OutboundSendDeps {
-  return createOutboundSendDepsFromCliSource(deps as Record<string, unknown>);
+  return createOutboundSendDepsFromCliSource(deps as never);
 }
 
 /** Stub - web auth store not available in hive-gateway. */

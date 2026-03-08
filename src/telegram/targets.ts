@@ -1,8 +1,10 @@
 /** Stub - Telegram not supported in hive-gateway. */
-export function parseTelegramTarget(
-  _target: string,
-): { chatId: string; threadId?: string } | undefined {
-  return undefined;
+export function parseTelegramTarget(_target: string): {
+  chatId: string;
+  threadId?: string;
+  messageThreadId?: number;
+} {
+  return { chatId: "" };
 }
 
 export function normalizeTelegramLookupTarget(_target: string): string {
@@ -11,6 +13,6 @@ export function normalizeTelegramLookupTarget(_target: string): string {
 
 export function resolveTelegramTargetChatType(
   _target: string,
-): "private" | "group" | "supergroup" | "channel" | undefined {
+): "direct" | "group" | "channel" | "unknown" | undefined {
   return undefined;
 }

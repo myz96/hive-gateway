@@ -1,7 +1,8 @@
 /** Stub - Discord not supported in hive-gateway. */
 export function parseDiscordTarget(
   _target: string,
-): { channelId: string; guildId?: string } | undefined {
+  _options?: { defaultKind?: string },
+): { id: string; channelId: string; guildId?: string; kind?: string } | undefined {
   return undefined;
 }
 

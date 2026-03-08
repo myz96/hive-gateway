@@ -5,6 +5,9 @@ export const DISCORD_TIMEOUT_DEFAULTS = {
   DEFAULT: 0,
 };
 
+export const DISCORD_DEFAULT_INBOUND_WORKER_TIMEOUT_MS = 0;
+export const DISCORD_DEFAULT_LISTENER_TIMEOUT_MS = 0;
+
 export function resolveDiscordTimeoutDefaults(): typeof DISCORD_TIMEOUT_DEFAULTS {
   return DISCORD_TIMEOUT_DEFAULTS;
 }

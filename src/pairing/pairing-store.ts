@@ -45,3 +45,18 @@ export async function removeChannelAllowFromStoreEntry(_params: {
   entry: string;
   accountId?: string;
 }): Promise<void> {}
+
+export async function approveChannelPairingCode(_params: {
+  channel: ChannelId;
+  code: string;
+  accountId?: string;
+}): Promise<boolean> {
+  return false;
+}
+
+export async function listChannelPairingRequests(_params: {
+  channel: ChannelId;
+  accountId?: string;
+}): Promise<PairingRequest[]> {
+  return [];
+}

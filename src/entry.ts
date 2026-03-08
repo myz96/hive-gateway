@@ -13,6 +13,8 @@ import { installProcessWarningFilter } from "./infra/warning-filter.js";
 import { attachChildProcessBridge } from "./process/child-process-bridge.js";
 
 const ENTRY_WRAPPER_PAIRS = [
+  { wrapperBasename: "hive-gateway.mjs", entryBasename: "entry.js" },
+  { wrapperBasename: "hive-gateway.js", entryBasename: "entry.js" },
   { wrapperBasename: "openclaw.mjs", entryBasename: "entry.js" },
   { wrapperBasename: "openclaw.js", entryBasename: "entry.js" },
 ] as const;
@@ -40,7 +42,7 @@ if (
 ) {
   // Imported as a dependency — skip all entry-point side effects.
 } else {
-  process.title = "openclaw";
+  process.title = "hive-gateway";
   installProcessWarningFilter();
   normalizeEnv();
   if (!isTruthyEnvValue(process.env.NODE_DISABLE_COMPILE_CACHE)) {
@@ -113,7 +115,7 @@ if (
 
     child.once("error", (error) => {
       console.error(
-        "[openclaw] Failed to respawn CLI:",
+        "[hive-gateway] Failed to respawn CLI:",
         error instanceof Error ? (error.stack ?? error.message) : error,
       );
       process.exit(1);
@@ -133,7 +135,7 @@ if (
       })
       .catch((error) => {
         console.error(
-          "[openclaw] Failed to resolve version:",
+          "[hive-gateway] Failed to resolve version:",
           error instanceof Error ? (error.stack ?? error.message) : error,
         );
         process.exitCode = 1;
@@ -151,7 +153,7 @@ if (
       })
       .catch((error) => {
         console.error(
-          "[openclaw] Failed to display help:",
+          "[hive-gateway] Failed to display help:",
           error instanceof Error ? (error.stack ?? error.message) : error,
         );
         process.exitCode = 1;
@@ -165,7 +167,7 @@ if (
     const parsed = parseCliProfileArgs(process.argv);
     if (!parsed.ok) {
       // Keep it simple; Commander will handle rich help/errors after we strip flags.
-      console.error(`[openclaw] ${parsed.error}`);
+      console.error(`[hive-gateway] ${parsed.error}`);
       process.exit(2);
     }
 
@@ -180,7 +182,7 @@ if (
         .then(({ runCli }) => runCli(process.argv))
         .catch((error) => {
           console.error(
-            "[openclaw] Failed to start CLI:",
+            "[hive-gateway] Failed to start CLI:",
             error instanceof Error ? (error.stack ?? error.message) : error,
           );
           process.exitCode = 1;

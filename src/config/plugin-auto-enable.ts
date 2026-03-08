@@ -13,7 +13,8 @@ import {
   type PluginManifestRegistry,
 } from "../plugins/manifest-registry.js";
 import { isRecord } from "../utils.js";
-import { hasAnyWhatsAppAuth } from "../web/accounts.js";
+/** WhatsApp auth stub - not supported in hive-gateway. */
+const hasAnyWhatsAppAuth = (_cfg: unknown): boolean => false;
 import type { OpenClawConfig } from "./config.js";
 import { ensurePluginAllowlisted } from "./plugins-allowlist.js";
 

@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 import process from "node:process";
 import { fileURLToPath } from "node:url";
-import { getReplyFromConfig } from "./auto-reply/reply.js";
-import { applyTemplate } from "./auto-reply/templating.js";
 import { monitorWebChannel } from "./channel-web.js";
 import { createDefaultDeps } from "./cli/deps.js";
 import { promptYesNo } from "./cli/prompt.js";
@@ -49,13 +47,11 @@ const program = buildProgram();
 
 export {
   assertWebChannel,
-  applyTemplate,
   createDefaultDeps,
   deriveSessionKey,
   describePortOwner,
   ensureBinary,
   ensurePortAvailable,
-  getReplyFromConfig,
   handlePortError,
   loadConfig,
   loadSessionStore,
@@ -82,12 +78,12 @@ if (isMain) {
   installUnhandledRejectionHandler();
 
   process.on("uncaughtException", (error) => {
-    console.error("[openclaw] Uncaught exception:", formatUncaughtError(error));
+    console.error("[hive-gateway] Uncaught exception:", formatUncaughtError(error));
     process.exit(1);
   });
 
   void program.parseAsync(process.argv).catch((err) => {
-    console.error("[openclaw] CLI failed:", formatUncaughtError(err));
+    console.error("[hive-gateway] CLI failed:", formatUncaughtError(err));
     process.exit(1);
   });
 }

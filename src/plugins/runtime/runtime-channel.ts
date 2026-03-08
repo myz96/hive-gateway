@@ -51,51 +51,11 @@ import {
   resolveStorePath,
   updateLastRoute,
 } from "../../config/sessions.js";
-import { auditDiscordChannelPermissions } from "../../discord/audit.js";
-import {
-  listDiscordDirectoryGroupsLive,
-  listDiscordDirectoryPeersLive,
-} from "../../discord/directory-live.js";
-import { monitorDiscordProvider } from "../../discord/monitor.js";
-import { probeDiscord } from "../../discord/probe.js";
-import { resolveDiscordChannelAllowlist } from "../../discord/resolve-channels.js";
-import { resolveDiscordUserAllowlist } from "../../discord/resolve-users.js";
-import { sendMessageDiscord, sendPollDiscord } from "../../discord/send.js";
-import { monitorIMessageProvider } from "../../imessage/monitor.js";
-import { probeIMessage } from "../../imessage/probe.js";
-import { sendMessageIMessage } from "../../imessage/send.js";
 import { getChannelActivity, recordChannelActivity } from "../../infra/channel-activity.js";
-import {
-  listLineAccountIds,
-  normalizeAccountId as normalizeLineAccountId,
-  resolveDefaultLineAccountId,
-  resolveLineAccount,
-} from "../../line/accounts.js";
-import { monitorLineProvider } from "../../line/monitor.js";
-import { probeLineBot } from "../../line/probe.js";
-import {
-  createQuickReplyItems,
-  pushFlexMessage,
-  pushLocationMessage,
-  pushMessageLine,
-  pushMessagesLine,
-  pushTemplateMessage,
-  pushTextMessageWithQuickReplies,
-  sendMessageLine,
-} from "../../line/send.js";
-import { buildTemplateMessageFromPayload } from "../../line/template-messages.js";
 import { convertMarkdownTables } from "../../markdown/tables.js";
 import { fetchRemoteMedia } from "../../media/fetch.js";
 import { saveMediaBuffer } from "../../media/store.js";
-import { buildPairingReply } from "../../pairing/pairing-messages.js";
-import {
-  readChannelAllowFromStore,
-  upsertChannelPairingRequest,
-} from "../../pairing/pairing-store.js";
 import { resolveAgentRoute } from "../../routing/resolve-route.js";
-import { monitorSignalProvider } from "../../signal/index.js";
-import { probeSignal } from "../../signal/probe.js";
-import { sendMessageSignal } from "../../signal/send.js";
 import {
   listSlackDirectoryGroupsLive,
   listSlackDirectoryPeersLive,
@@ -105,16 +65,16 @@ import { probeSlack } from "../../slack/probe.js";
 import { resolveSlackChannelAllowlist } from "../../slack/resolve-channels.js";
 import { resolveSlackUserAllowlist } from "../../slack/resolve-users.js";
 import { sendMessageSlack } from "../../slack/send.js";
-import {
-  auditTelegramGroupMembership,
-  collectTelegramUnmentionedGroupIds,
-} from "../../telegram/audit.js";
-import { monitorTelegramProvider } from "../../telegram/monitor.js";
-import { probeTelegram } from "../../telegram/probe.js";
-import { sendMessageTelegram, sendPollTelegram } from "../../telegram/send.js";
-import { resolveTelegramToken } from "../../telegram/token.js";
-import { createRuntimeWhatsApp } from "./runtime-whatsapp.js";
 import type { PluginRuntime } from "./types.js";
+
+// Stub functions for removed channels
+const noop = () => {};
+const noopAsync = () => Promise.resolve();
+const noopProbe = () => Promise.resolve({ ok: false, error: "not supported in hive-gateway" });
+const noopSend = (..._args: unknown[]) =>
+  Promise.reject(new Error("channel not supported in hive-gateway"));
+const noopAllowlist = () => [];
+const noopDirectory = () => [];
 
 export function createRuntimeChannel(): PluginRuntime["channel"] {
   return {
@@ -139,7 +99,6 @@ export function createRuntimeChannel(): PluginRuntime["channel"] {
       withReplyDispatcher,
       finalizeInboundContext,
       formatAgentEnvelope,
-      /** @deprecated Prefer `BodyForAgent` + structured user-context blocks (do not build plaintext envelopes for prompts). */
       formatInboundEnvelope,
       resolveEnvelopeFormatOptions,
     },
@@ -147,18 +106,9 @@ export function createRuntimeChannel(): PluginRuntime["channel"] {
       resolveAgentRoute,
     },
     pairing: {
-      buildPairingReply,
-      readAllowFromStore: ({ channel, accountId, env }) =>
-        readChannelAllowFromStore(channel, env, accountId),
-      upsertPairingRequest: ({ channel, id, accountId, meta, env, pairingAdapter }) =>
-        upsertChannelPairingRequest({
-          channel,
-          id,
-          accountId,
-          meta,
-          env,
-          pairingAdapter,
-        }),
+      buildPairingReply: () => undefined,
+      readAllowFromStore: () => Promise.resolve([]),
+      upsertPairingRequest: () => Promise.resolve(),
     },
     media: {
       fetchRemoteMedia,
@@ -200,15 +150,15 @@ export function createRuntimeChannel(): PluginRuntime["channel"] {
     },
     discord: {
       messageActions: discordMessageActions,
-      auditChannelPermissions: auditDiscordChannelPermissions,
-      listDirectoryGroupsLive: listDiscordDirectoryGroupsLive,
-      listDirectoryPeersLive: listDiscordDirectoryPeersLive,
-      probeDiscord,
-      resolveChannelAllowlist: resolveDiscordChannelAllowlist,
-      resolveUserAllowlist: resolveDiscordUserAllowlist,
-      sendMessageDiscord,
-      sendPollDiscord,
-      monitorDiscordProvider,
+      auditChannelPermissions: noopAsync as never,
+      listDirectoryGroupsLive: noopDirectory as never,
+      listDirectoryPeersLive: noopDirectory as never,
+      probeDiscord: noopProbe as never,
+      resolveChannelAllowlist: noopAllowlist as never,
+      resolveUserAllowlist: noopAllowlist as never,
+      sendMessageDiscord: noopSend as never,
+      sendPollDiscord: noopSend as never,
+      monitorDiscordProvider: noop as never,
     },
     slack: {
       listDirectoryGroupsLive: listSlackDirectoryGroupsLive,
@@ -221,43 +171,47 @@ export function createRuntimeChannel(): PluginRuntime["channel"] {
       handleSlackAction,
     },
     telegram: {
-      auditGroupMembership: auditTelegramGroupMembership,
-      collectUnmentionedGroupIds: collectTelegramUnmentionedGroupIds,
-      probeTelegram,
-      resolveTelegramToken,
-      sendMessageTelegram,
-      sendPollTelegram,
-      monitorTelegramProvider,
+      auditGroupMembership: noopAsync as never,
+      collectUnmentionedGroupIds: noopAsync as never,
+      probeTelegram: noopProbe as never,
+      resolveTelegramToken: (() => undefined) as never,
+      sendMessageTelegram: noopSend as never,
+      sendPollTelegram: noopSend as never,
+      monitorTelegramProvider: noop as never,
       messageActions: telegramMessageActions,
     },
     signal: {
-      probeSignal,
-      sendMessageSignal,
-      monitorSignalProvider,
+      probeSignal: noopProbe as never,
+      sendMessageSignal: noopSend as never,
+      monitorSignalProvider: noop as never,
       messageActions: signalMessageActions,
     },
     imessage: {
-      monitorIMessageProvider,
-      probeIMessage,
-      sendMessageIMessage,
+      monitorIMessageProvider: noop as never,
+      probeIMessage: noopProbe as never,
+      sendMessageIMessage: noopSend as never,
     },
-    whatsapp: createRuntimeWhatsApp(),
+    whatsapp: {
+      sendMessageWhatsApp: noopSend as never,
+      sendPollWhatsApp: noopSend as never,
+      monitorWebChannel: noop as never,
+    } as never,
     line: {
-      listLineAccountIds,
-      resolveDefaultLineAccountId,
-      resolveLineAccount,
-      normalizeAccountId: normalizeLineAccountId,
-      probeLineBot,
-      sendMessageLine,
-      pushMessageLine,
-      pushMessagesLine,
-      pushFlexMessage,
-      pushTemplateMessage,
-      pushLocationMessage,
-      pushTextMessageWithQuickReplies,
-      createQuickReplyItems,
-      buildTemplateMessageFromPayload,
-      monitorLineProvider,
-    },
+      listLineAccountIds: () => [],
+      resolveDefaultLineAccountId: () => undefined,
+      resolveLineAccount: () => undefined,
+      normalizeAccountId: (id: string) => id,
+      probeLineBot: noopProbe,
+      sendMessageLine: noopSend,
+      pushMessageLine: noopSend,
+      pushMessagesLine: noopSend,
+      pushFlexMessage: noopSend,
+      pushTemplateMessage: noopSend,
+      pushLocationMessage: noopSend,
+      pushTextMessageWithQuickReplies: noopSend,
+      createQuickReplyItems: () => [],
+      buildTemplateMessageFromPayload: () => undefined,
+      monitorLineProvider: noop,
+    } as never,
   };
 }

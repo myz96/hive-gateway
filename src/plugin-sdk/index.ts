@@ -62,16 +62,6 @@ export type {
 } from "../channels/plugins/types.js";
 export type { ChannelConfigSchema, ChannelPlugin } from "../channels/plugins/types.plugin.js";
 export type {
-  ThreadBindingManager,
-  ThreadBindingRecord,
-  ThreadBindingTargetKind,
-} from "../discord/monitor/thread-bindings.js";
-export {
-  autoBindSpawnedDiscordSubagent,
-  listThreadBindingsBySessionKey,
-  unbindThreadBindingsBySessionKey,
-} from "../discord/monitor/thread-bindings.js";
-export type {
   AcpRuntimeCapabilities,
   AcpRuntimeControl,
   AcpRuntimeDoctorReport,
@@ -138,11 +128,6 @@ export {
   type BasicAllowlistResolutionEntry,
 } from "./allowlist-resolution.js";
 export { resolveRequestUrl } from "./request-url.js";
-export {
-  buildDiscordSendMediaOptions,
-  buildDiscordSendOptions,
-  tagDiscordChannelResult,
-} from "./discord-send.js";
 export type { KeyedAsyncQueueHooks } from "./keyed-async-queue.js";
 export { enqueueKeyedTask, KeyedAsyncQueue } from "./keyed-async-queue.js";
 export { normalizeWebhookPath, resolveWebhookPath } from "./webhook-path.js";
@@ -308,7 +293,6 @@ export {
   listConfiguredAccountIds,
   resolveAccountWithDefaultFallback,
 } from "./account-resolution.js";
-export { issuePairingChallenge } from "../pairing/pairing-challenge.js";
 export { handleSlackMessageAction } from "./slack-message-actions.js";
 export { extractToolSend } from "./tool-send.js";
 export {
@@ -321,14 +305,6 @@ export {
   sendMediaWithLeadingCaption,
 } from "./reply-payload.js";
 export type { OutboundReplyPayload } from "./reply-payload.js";
-export {
-  buildInboundReplyDispatchBase,
-  dispatchInboundReplyWithBase,
-  dispatchReplyFromConfigWithSettledDispatcher,
-  recordInboundSessionAndDispatchReply,
-} from "./inbound-reply-dispatch.js";
-export type { OutboundMediaLoadOptions } from "./outbound-media.js";
-export { loadOutboundMediaFromUrl } from "./outbound-media.js";
 export { resolveChannelAccountConfigBasePath } from "./config-paths.js";
 export { buildMediaPayload } from "../channels/plugins/media-payload.js";
 export type { MediaPayload, MediaPayloadInput } from "../channels/plugins/media-payload.js";
@@ -375,20 +351,11 @@ export type { ChatType } from "../channels/chat-type.js";
 /** @deprecated Use ChatType instead */
 export type { RoutePeerKind } from "../routing/resolve-route.js";
 export { resolveAckReaction } from "../agents/identity.js";
-export type { ReplyPayload } from "../auto-reply/types.js";
-export type { ChunkMode } from "../auto-reply/chunk.js";
-export { SILENT_REPLY_TOKEN, isSilentReplyText } from "../auto-reply/tokens.js";
-export { formatInboundFromLabel } from "../auto-reply/envelope.js";
 export {
   createScopedAccountConfigAccessors,
   formatTrimmedAllowFromEntries,
   mapAllowFromEntries,
   resolveOptionalConfigString,
-  formatWhatsAppConfigAllowFromEntries,
-  resolveIMessageConfigAllowFrom,
-  resolveIMessageConfigDefaultTo,
-  resolveWhatsAppConfigAllowFrom,
-  resolveWhatsAppConfigDefaultTo,
 } from "./channel-config-helpers.js";
 export {
   approveDevicePairing,
@@ -452,16 +419,6 @@ export { rawDataToString } from "../infra/ws.js";
 export { isWSLSync, isWSL2Sync, isWSLEnv } from "../infra/wsl.js";
 export { isTruthyEnvValue } from "../infra/env.js";
 export { resolveChannelGroupRequireMention, resolveToolsBySender } from "../config/group-policy.js";
-export {
-  buildPendingHistoryContextFromMap,
-  clearHistoryEntries,
-  clearHistoryEntriesIfEnabled,
-  DEFAULT_GROUP_HISTORY_LIMIT,
-  evictOldHistoryKeys,
-  recordPendingHistoryEntry,
-  recordPendingHistoryEntryIfEnabled,
-} from "../auto-reply/reply/history.js";
-export type { HistoryEntry } from "../auto-reply/reply/history.js";
 export { mergeAllowlist, summarizeMapping } from "../channels/allowlists/resolve-utils.js";
 export {
   resolveMentionGating,
@@ -582,7 +539,6 @@ export {
   readReactionParams,
   readStringParam,
 } from "../agents/tools/common.js";
-export { formatDocsLink } from "../terminal/links.js";
 export {
   DM_GROUP_ACCESS_REASON,
   readStoreAllowFromForDmPolicy,
@@ -595,7 +551,6 @@ export {
 export type { DmGroupAccessReasonCode } from "../security/dm-policy-shared.js";
 export type { HookEntry } from "../hooks/types.js";
 export { clamp, escapeRegExp, normalizeE164, safeParseJson, sleep } from "../utils.js";
-export { stripAnsi } from "../terminal/ansi.js";
 export { missingTargetError } from "../infra/outbound/target-errors.js";
 export { registerLogTransport } from "../logging/logger.js";
 export type { LogTransport, LogTransportRecord } from "../logging/logger.js";
@@ -622,52 +577,7 @@ export type {
 } from "../infra/diagnostic-events.js";
 export { detectMime, extensionForMime, getFileExtension } from "../media/mime.js";
 export { extractOriginalFilename } from "../media/store.js";
-export { listSkillCommandsForAgents } from "../auto-reply/skill-commands.js";
 export type { SkillCommandSpec } from "../agents/skills.js";
-
-// Channel: Discord
-export {
-  listDiscordAccountIds,
-  resolveDefaultDiscordAccountId,
-  resolveDiscordAccount,
-  type ResolvedDiscordAccount,
-} from "../discord/accounts.js";
-export { inspectDiscordAccount } from "../discord/account-inspect.js";
-export type { InspectedDiscordAccount } from "../discord/account-inspect.js";
-export { collectDiscordAuditChannelIds } from "../discord/audit.js";
-export { discordOnboardingAdapter } from "../channels/plugins/onboarding/discord.js";
-export {
-  looksLikeDiscordTargetId,
-  normalizeDiscordMessagingTarget,
-  normalizeDiscordOutboundTarget,
-} from "../channels/plugins/normalize/discord.js";
-export { collectDiscordStatusIssues } from "../channels/plugins/status-issues/discord.js";
-
-// Channel: iMessage
-export {
-  listIMessageAccountIds,
-  resolveDefaultIMessageAccountId,
-  resolveIMessageAccount,
-  type ResolvedIMessageAccount,
-} from "../imessage/accounts.js";
-export { imessageOnboardingAdapter } from "../channels/plugins/onboarding/imessage.js";
-export {
-  looksLikeIMessageTargetId,
-  normalizeIMessageMessagingTarget,
-} from "../channels/plugins/normalize/imessage.js";
-export {
-  createAllowedChatSenderMatcher,
-  parseChatAllowTargetPrefixes,
-  parseChatTargetPrefixesOrThrow,
-  resolveServicePrefixedChatTarget,
-  resolveServicePrefixedAllowTarget,
-  resolveServicePrefixedOrChatAllowTarget,
-  resolveServicePrefixedTarget,
-} from "../imessage/target-parsing-helpers.js";
-export type {
-  ChatSenderAllowParams,
-  ParsedChatTarget,
-} from "../imessage/target-parsing-helpers.js";
 
 // Channel: Slack
 export {
@@ -687,98 +597,6 @@ export {
   normalizeSlackMessagingTarget,
 } from "../channels/plugins/normalize/slack.js";
 export { buildSlackThreadingToolContext } from "../slack/threading-tool-context.js";
-
-// Channel: Telegram
-export {
-  listTelegramAccountIds,
-  resolveDefaultTelegramAccountId,
-  resolveTelegramAccount,
-  type ResolvedTelegramAccount,
-} from "../telegram/accounts.js";
-export { inspectTelegramAccount } from "../telegram/account-inspect.js";
-export type { InspectedTelegramAccount } from "../telegram/account-inspect.js";
-export { telegramOnboardingAdapter } from "../channels/plugins/onboarding/telegram.js";
-export {
-  looksLikeTelegramTargetId,
-  normalizeTelegramMessagingTarget,
-} from "../channels/plugins/normalize/telegram.js";
-export { collectTelegramStatusIssues } from "../channels/plugins/status-issues/telegram.js";
-export {
-  parseTelegramReplyToMessageId,
-  parseTelegramThreadId,
-} from "../telegram/outbound-params.js";
-export { type TelegramProbe } from "../telegram/probe.js";
-
-// Channel: Signal
-export {
-  listSignalAccountIds,
-  resolveDefaultSignalAccountId,
-  resolveSignalAccount,
-  type ResolvedSignalAccount,
-} from "../signal/accounts.js";
-export { signalOnboardingAdapter } from "../channels/plugins/onboarding/signal.js";
-export {
-  looksLikeSignalTargetId,
-  normalizeSignalMessagingTarget,
-} from "../channels/plugins/normalize/signal.js";
-
-// Channel: WhatsApp
-export {
-  listWhatsAppAccountIds,
-  resolveDefaultWhatsAppAccountId,
-  resolveWhatsAppAccount,
-  type ResolvedWhatsAppAccount,
-} from "../web/accounts.js";
-export { isWhatsAppGroupJid, normalizeWhatsAppTarget } from "../whatsapp/normalize.js";
-export { resolveWhatsAppOutboundTarget } from "../whatsapp/resolve-outbound-target.js";
-export { whatsappOnboardingAdapter } from "../channels/plugins/onboarding/whatsapp.js";
-export { resolveWhatsAppHeartbeatRecipients } from "../channels/plugins/whatsapp-heartbeat.js";
-export {
-  looksLikeWhatsAppTargetId,
-  normalizeWhatsAppAllowFromEntries,
-  normalizeWhatsAppMessagingTarget,
-} from "../channels/plugins/normalize/whatsapp.js";
-export {
-  resolveWhatsAppGroupIntroHint,
-  resolveWhatsAppMentionStripPatterns,
-} from "../channels/plugins/whatsapp-shared.js";
-export { collectWhatsAppStatusIssues } from "../channels/plugins/status-issues/whatsapp.js";
-
-// Channel: BlueBubbles
-export { collectBlueBubblesStatusIssues } from "../channels/plugins/status-issues/bluebubbles.js";
-
-// Channel: LINE
-export {
-  listLineAccountIds,
-  normalizeAccountId as normalizeLineAccountId,
-  resolveDefaultLineAccountId,
-  resolveLineAccount,
-} from "../line/accounts.js";
-export { LineConfigSchema } from "../line/config-schema.js";
-export type {
-  LineConfig,
-  LineAccountConfig,
-  ResolvedLineAccount,
-  LineChannelData,
-} from "../line/types.js";
-export {
-  createInfoCard,
-  createListCard,
-  createImageCard,
-  createActionCard,
-  createReceiptCard,
-  type CardAction,
-  type ListItem,
-} from "../line/flex-templates.js";
-export {
-  processLineMessage,
-  hasMarkdownToConvert,
-  stripMarkdown,
-} from "../line/markdown-to-line.js";
-export type { ProcessedLineMessage } from "../line/markdown-to-line.js";
-
-// Media utilities
-export { loadWebMedia, type WebMediaResult } from "../web/media.js";
 
 // Context engine
 export type {

@@ -2,7 +2,6 @@ import { mergeDmAllowFromSources, resolveGroupAllowFromSources } from "../channe
 import { resolveControlCommandGate } from "../channels/command-gating.js";
 import type { ChannelId } from "../channels/plugins/types.js";
 import type { GroupPolicy } from "../config/types.base.js";
-import { readChannelAllowFromStore } from "../pairing/pairing-store.js";
 import { evaluateMatchedGroupAccessForPolicy } from "../plugin-sdk/group-access.js";
 import { normalizeStringEntries } from "../shared/string-normalization.js";
 
@@ -97,8 +96,7 @@ export async function readStoreAllowFromForDmPolicy(params: {
   }
   const readStore =
     params.readStore ??
-    ((provider: ChannelId, accountId: string) =>
-      readChannelAllowFromStore(provider, process.env, accountId));
+    ((_provider: ChannelId, _accountId: string) => Promise.resolve([] as string[]));
   return await readStore(params.provider, params.accountId).catch(() => []);
 }
 

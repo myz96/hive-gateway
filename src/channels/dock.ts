@@ -2,7 +2,6 @@ import {
   resolveChannelGroupRequireMention,
   resolveChannelGroupToolsPolicy,
 } from "../config/group-policy.js";
-import { inspectDiscordAccount } from "../discord/account-inspect.js";
 import {
   formatAllowFromLowercase,
   formatNormalizedAllowFromEntries,
@@ -10,38 +9,18 @@ import {
 import {
   mapAllowFromEntries,
   resolveOptionalConfigString,
-  formatTrimmedAllowFromEntries,
-  formatWhatsAppConfigAllowFromEntries,
-  resolveIMessageConfigAllowFrom,
-  resolveIMessageConfigDefaultTo,
-  resolveWhatsAppConfigAllowFrom,
-  resolveWhatsAppConfigDefaultTo,
 } from "../plugin-sdk/channel-config-helpers.js";
 import { requireActivePluginRegistry } from "../plugins/runtime.js";
 import { normalizeAccountId } from "../routing/session-key.js";
-import { resolveSignalAccount } from "../signal/accounts.js";
 import { inspectSlackAccount } from "../slack/account-inspect.js";
 import { resolveSlackReplyToMode } from "../slack/accounts.js";
 import { buildSlackThreadingToolContext } from "../slack/threading-tool-context.js";
-import { inspectTelegramAccount } from "../telegram/account-inspect.js";
-import { normalizeE164 } from "../utils.js";
 import {
-  resolveDiscordGroupRequireMention,
-  resolveDiscordGroupToolPolicy,
   resolveGoogleChatGroupRequireMention,
   resolveGoogleChatGroupToolPolicy,
-  resolveIMessageGroupRequireMention,
-  resolveIMessageGroupToolPolicy,
-  resolveLineGroupRequireMention,
-  resolveLineGroupToolPolicy,
   resolveSlackGroupRequireMention,
   resolveSlackGroupToolPolicy,
-  resolveTelegramGroupRequireMention,
-  resolveTelegramGroupToolPolicy,
-  resolveWhatsAppGroupRequireMention,
-  resolveWhatsAppGroupToolPolicy,
 } from "./plugins/group-mentions.js";
-import { normalizeSignalMessagingTarget } from "./plugins/normalize/signal.js";
 import type {
   ChannelCapabilities,
   ChannelCommandAdapter,
@@ -56,10 +35,6 @@ import type {
   ChannelThreadingAdapter,
   ChannelThreadingToolContext,
 } from "./plugins/types.js";
-import {
-  resolveWhatsAppGroupIntroHint,
-  resolveWhatsAppMentionStripPatterns,
-} from "./plugins/whatsapp-shared.js";
 import { CHAT_CHANNEL_ORDER, type ChatChannelId, getChatChannelMeta } from "./registry.js";
 
 export type ChannelDock = {
@@ -108,52 +83,6 @@ function formatAllowFromWithReplacements(
       return normalized.toLowerCase();
     },
   });
-}
-
-const formatDiscordAllowFrom = (allowFrom: Array<string | number>) =>
-  allowFrom
-    .map((entry) =>
-      String(entry)
-        .trim()
-        .replace(/^<@!?/, "")
-        .replace(/>$/, "")
-        .replace(/^discord:/i, "")
-        .replace(/^user:/i, "")
-        .replace(/^pk:/i, "")
-        .trim()
-        .toLowerCase(),
-    )
-    .filter(Boolean);
-
-function resolveDirectOrGroupChannelId(context: ChannelThreadingContext): string | undefined {
-  const isDirect = context.ChatType?.toLowerCase() === "direct";
-  return (isDirect ? (context.From ?? context.To) : context.To)?.trim() || undefined;
-}
-
-function buildSignalThreadToolContext(params: {
-  context: ChannelThreadingContext;
-  hasRepliedRef: ChannelThreadingToolContext["hasRepliedRef"];
-}): ChannelThreadingToolContext {
-  const currentChannelIdRaw = resolveDirectOrGroupChannelId(params.context);
-  const currentChannelId = currentChannelIdRaw
-    ? (normalizeSignalMessagingTarget(currentChannelIdRaw) ?? currentChannelIdRaw.trim())
-    : undefined;
-  return {
-    currentChannelId,
-    currentThreadTs: params.context.ReplyToId,
-    hasRepliedRef: params.hasRepliedRef,
-  };
-}
-
-function buildIMessageThreadToolContext(params: {
-  context: ChannelThreadingContext;
-  hasRepliedRef: ChannelThreadingToolContext["hasRepliedRef"];
-}): ChannelThreadingToolContext {
-  return {
-    currentChannelId: resolveDirectOrGroupChannelId(params.context),
-    currentThreadTs: params.context.ReplyToId,
-    hasRepliedRef: params.hasRepliedRef,
-  };
 }
 
 function buildThreadToolContextFromMessageThreadOrReply(params: {
@@ -235,128 +164,7 @@ function resolveNamedChannelDefaultTo(params: {
 // Adding a channel:
 // - add a new entry to `DOCKS`
 // - keep it cheap; push heavy logic into `src/channels/plugins/<id>.ts` or channel modules
-const DOCKS: Record<ChatChannelId, ChannelDock> = {
-  telegram: {
-    id: "telegram",
-    capabilities: {
-      chatTypes: ["direct", "group", "channel", "thread"],
-      nativeCommands: true,
-      blockStreaming: true,
-    },
-    outbound: DEFAULT_OUTBOUND_TEXT_CHUNK_LIMIT_4000,
-    config: {
-      resolveAllowFrom: ({ cfg, accountId }) =>
-        mapAllowFromEntries(inspectTelegramAccount({ cfg, accountId }).config.allowFrom),
-      formatAllowFrom: ({ allowFrom }) =>
-        formatAllowFromLowercase({
-          allowFrom,
-          stripPrefixRe: /^(telegram|tg):/i,
-        }),
-      resolveDefaultTo: ({ cfg, accountId }) =>
-        resolveOptionalConfigString(inspectTelegramAccount({ cfg, accountId }).config.defaultTo),
-    },
-    groups: {
-      resolveRequireMention: resolveTelegramGroupRequireMention,
-      resolveToolPolicy: resolveTelegramGroupToolPolicy,
-    },
-    threading: {
-      resolveReplyToMode: ({ cfg }) => cfg.channels?.telegram?.replyToMode ?? "off",
-      buildToolContext: ({ context, hasRepliedRef }) => {
-        // Telegram auto-threading should only use actual thread/topic IDs.
-        // ReplyToId is a message ID and causes invalid message_thread_id in DMs.
-        const threadId = context.MessageThreadId;
-        const rawCurrentMessageId = context.CurrentMessageId;
-        const currentMessageId =
-          typeof rawCurrentMessageId === "number"
-            ? rawCurrentMessageId
-            : rawCurrentMessageId?.trim() || undefined;
-        return {
-          currentChannelId: context.To?.trim() || undefined,
-          currentThreadTs: threadId != null ? String(threadId) : undefined,
-          currentMessageId,
-          hasRepliedRef,
-        };
-      },
-    },
-  },
-  whatsapp: {
-    id: "whatsapp",
-    capabilities: {
-      chatTypes: ["direct", "group"],
-      polls: true,
-      reactions: true,
-      media: true,
-    },
-    commands: {
-      enforceOwnerForCommands: true,
-      skipWhenConfigEmpty: true,
-    },
-    outbound: DEFAULT_OUTBOUND_TEXT_CHUNK_LIMIT_4000,
-    config: {
-      resolveAllowFrom: ({ cfg, accountId }) => resolveWhatsAppConfigAllowFrom({ cfg, accountId }),
-      formatAllowFrom: ({ allowFrom }) => formatWhatsAppConfigAllowFromEntries(allowFrom),
-      resolveDefaultTo: ({ cfg, accountId }) => resolveWhatsAppConfigDefaultTo({ cfg, accountId }),
-    },
-    groups: {
-      resolveRequireMention: resolveWhatsAppGroupRequireMention,
-      resolveToolPolicy: resolveWhatsAppGroupToolPolicy,
-      resolveGroupIntroHint: resolveWhatsAppGroupIntroHint,
-    },
-    mentions: {
-      stripPatterns: ({ ctx }) => resolveWhatsAppMentionStripPatterns(ctx),
-    },
-    threading: {
-      buildToolContext: ({ context, hasRepliedRef }) => {
-        const channelId = context.From?.trim() || context.To?.trim() || undefined;
-        return {
-          currentChannelId: channelId,
-          currentThreadTs: context.ReplyToId,
-          hasRepliedRef,
-        };
-      },
-    },
-  },
-  discord: {
-    id: "discord",
-    capabilities: {
-      chatTypes: ["direct", "channel", "thread"],
-      polls: true,
-      reactions: true,
-      media: true,
-      nativeCommands: true,
-      threads: true,
-    },
-    outbound: { textChunkLimit: 2000 },
-    streaming: DEFAULT_BLOCK_STREAMING_COALESCE,
-    elevated: {
-      allowFromFallback: ({ cfg }) =>
-        cfg.channels?.discord?.allowFrom ?? cfg.channels?.discord?.dm?.allowFrom,
-    },
-    config: {
-      resolveAllowFrom: ({ cfg, accountId }) => {
-        const account = inspectDiscordAccount({ cfg, accountId });
-        return mapAllowFromEntries(account.config.allowFrom ?? account.config.dm?.allowFrom);
-      },
-      formatAllowFrom: ({ allowFrom }) => formatDiscordAllowFrom(allowFrom),
-      resolveDefaultTo: ({ cfg, accountId }) =>
-        resolveOptionalConfigString(inspectDiscordAccount({ cfg, accountId }).config.defaultTo),
-    },
-    groups: {
-      resolveRequireMention: resolveDiscordGroupRequireMention,
-      resolveToolPolicy: resolveDiscordGroupToolPolicy,
-    },
-    mentions: {
-      stripPatterns: () => ["<@!?\\d+>"],
-    },
-    threading: {
-      resolveReplyToMode: ({ cfg }) => cfg.channels?.discord?.replyToMode ?? "off",
-      buildToolContext: ({ context, hasRepliedRef }) => ({
-        currentChannelId: context.To?.trim() || undefined,
-        currentThreadTs: context.ReplyToId,
-        hasRepliedRef,
-      }),
-    },
-  },
+const DOCKS: Partial<Record<ChatChannelId, ChannelDock>> = {
   irc: {
     id: "irc",
     capabilities: {
@@ -493,66 +301,6 @@ const DOCKS: Record<ChatChannelId, ChannelDock> = {
       buildToolContext: (params) => buildSlackThreadingToolContext(params),
     },
   },
-  signal: {
-    id: "signal",
-    capabilities: {
-      chatTypes: ["direct", "group"],
-      reactions: true,
-      media: true,
-    },
-    outbound: DEFAULT_OUTBOUND_TEXT_CHUNK_LIMIT_4000,
-    streaming: DEFAULT_BLOCK_STREAMING_COALESCE,
-    config: {
-      resolveAllowFrom: ({ cfg, accountId }) =>
-        mapAllowFromEntries(resolveSignalAccount({ cfg, accountId }).config.allowFrom),
-      formatAllowFrom: ({ allowFrom }) =>
-        formatNormalizedAllowFromEntries({
-          allowFrom,
-          normalizeEntry: (entry) =>
-            entry === "*" ? "*" : normalizeE164(entry.replace(/^signal:/i, "")),
-        }),
-      resolveDefaultTo: ({ cfg, accountId }) =>
-        resolveOptionalConfigString(resolveSignalAccount({ cfg, accountId }).config.defaultTo),
-    },
-    threading: {
-      buildToolContext: ({ context, hasRepliedRef }) =>
-        buildSignalThreadToolContext({ context, hasRepliedRef }),
-    },
-  },
-  imessage: {
-    id: "imessage",
-    capabilities: {
-      chatTypes: ["direct", "group"],
-      reactions: true,
-      media: true,
-    },
-    outbound: DEFAULT_OUTBOUND_TEXT_CHUNK_LIMIT_4000,
-    config: {
-      resolveAllowFrom: ({ cfg, accountId }) => resolveIMessageConfigAllowFrom({ cfg, accountId }),
-      formatAllowFrom: ({ allowFrom }) => formatTrimmedAllowFromEntries(allowFrom),
-      resolveDefaultTo: ({ cfg, accountId }) => resolveIMessageConfigDefaultTo({ cfg, accountId }),
-    },
-    groups: {
-      resolveRequireMention: resolveIMessageGroupRequireMention,
-      resolveToolPolicy: resolveIMessageGroupToolPolicy,
-    },
-    threading: {
-      buildToolContext: ({ context, hasRepliedRef }) =>
-        buildIMessageThreadToolContext({ context, hasRepliedRef }),
-    },
-  },
-  line: {
-    id: "line",
-    capabilities: {
-      chatTypes: ["direct", "group"],
-      media: true,
-    },
-    outbound: { textChunkLimit: 5000 },
-    groups: {
-      resolveRequireMention: resolveLineGroupRequireMention,
-      resolveToolPolicy: resolveLineGroupToolPolicy,
-    },
-  },
 };
 
 function buildDockFromPlugin(plugin: ChannelPlugin): ChannelDock {
@@ -602,9 +350,9 @@ function listPluginDockEntries(): Array<{ id: ChannelId; dock: ChannelDock; orde
 }
 
 export function listChannelDocks(): ChannelDock[] {
-  const baseEntries = CHAT_CHANNEL_ORDER.map((id) => ({
+  const baseEntries = CHAT_CHANNEL_ORDER.filter((id) => DOCKS[id] != null).map((id) => ({
     id,
-    dock: DOCKS[id],
+    dock: DOCKS[id]!,
     order: getChatChannelMeta(id).order,
   }));
   const pluginEntries = listPluginDockEntries();

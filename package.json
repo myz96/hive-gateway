@@ -1,20 +1,20 @@
 {
-  "name": "openclaw",
-  "version": "2026.3.7",
-  "description": "Multi-channel AI gateway with extensible messaging integrations",
+  "name": "hive-gateway",
+  "version": "0.1.0",
+  "description": "Slack-based AI agent gateway for engineering teams",
   "keywords": [],
-  "homepage": "https://github.com/openclaw/openclaw#readme",
+  "homepage": "https://github.com/myz96/hive-gateway#readme",
   "bugs": {
-    "url": "https://github.com/openclaw/openclaw/issues"
+    "url": "https://github.com/myz96/hive-gateway/issues"
   },
   "license": "MIT",
   "author": "",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/openclaw/openclaw.git"
+    "url": "git+https://github.com/myz96/hive-gateway.git"
   },
   "bin": {
-    "openclaw": "openclaw.mjs"
+    "hive-gateway": "hive-gateway.mjs"
   },
   "directories": {
     "doc": "docs",
@@ -23,7 +23,7 @@
   "files": [
     "CHANGELOG.md",
     "LICENSE",
-    "openclaw.mjs",
+    "hive-gateway.mjs",
     "README-header.png",
     "README.md",
     "assets/",

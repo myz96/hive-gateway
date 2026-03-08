@@ -1,7 +1,8 @@
 import { createRequire } from "node:module";
 
+declare const __HIVE_GATEWAY_VERSION__: string | undefined;
 declare const __OPENCLAW_VERSION__: string | undefined;
-const CORE_PACKAGE_NAME = "openclaw";
+const CORE_PACKAGE_NAME = "hive-gateway";
 
 const PACKAGE_JSON_CANDIDATES = [
   "../package.json",
@@ -110,9 +111,9 @@ export function resolveRuntimeServiceVersion(
 
   return (
     firstNonEmpty(
-      env["OPENCLAW_VERSION"],
+      env["HIVE_GATEWAY_VERSION"] || env["OPENCLAW_VERSION"],
       runtimeVersion,
-      env["OPENCLAW_SERVICE_VERSION"],
+      env["HIVE_GATEWAY_SERVICE_VERSION"] || env["OPENCLAW_SERVICE_VERSION"],
       env["npm_package_version"],
     ) ?? fallback
   );
@@ -123,6 +124,6 @@ export function resolveRuntimeServiceVersion(
 // - Dev/npm builds: package.json.
 export const VERSION = resolveBinaryVersion({
   moduleUrl: import.meta.url,
-  injectedVersion: typeof __OPENCLAW_VERSION__ === "string" ? __OPENCLAW_VERSION__ : undefined,
-  bundledVersion: process.env.OPENCLAW_BUNDLED_VERSION,
+  injectedVersion: typeof __HIVE_GATEWAY_VERSION__ === "string" ? __HIVE_GATEWAY_VERSION__ : (typeof __OPENCLAW_VERSION__ === "string" ? __OPENCLAW_VERSION__ : undefined),
+  bundledVersion: process.env.HIVE_GATEWAY_BUNDLED_VERSION || process.env.OPENCLAW_BUNDLED_VERSION,
 });

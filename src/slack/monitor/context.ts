@@ -81,6 +81,7 @@ export type SlackMonitorContext = {
     channelId: string;
     threadTs?: string;
     status: string;
+    loadingMessages?: string[];
   }) => Promise<void>;
 };
 
@@ -252,6 +253,7 @@ export function createSlackMonitorContext(params: {
     channelId: string;
     threadTs?: string;
     status: string;
+    loadingMessages?: string[];
   }) => {
     if (!p.threadTs) {
       return;
@@ -261,6 +263,9 @@ export function createSlackMonitorContext(params: {
       channel_id: p.channelId,
       thread_ts: p.threadTs,
       status: p.status,
+      ...(p.loadingMessages && p.loadingMessages.length > 0
+        ? { loading_messages: p.loadingMessages }
+        : {}),
     };
     const client = params.app.client as unknown as {
       assistant?: {

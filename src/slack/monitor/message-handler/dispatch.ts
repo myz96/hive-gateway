@@ -27,6 +27,19 @@ import { normalizeSlackAllowOwnerEntry } from "../allow-list.js";
 import { createSlackReplyDeliveryPlan, deliverReplies, resolveSlackThreadTs } from "../replies.js";
 import type { PreparedSlackMessage } from "./types.js";
 
+const DEFAULT_LOADING_MESSAGES = [
+  "Reticulating splines...",
+  "Consulting the rubber duck...",
+  "Rearranging ones and zeros...",
+  "Asking the mass of silicon for advice...",
+  "Compiling thoughts...",
+  "Herding the electrons...",
+  "Summoning the code spirits...",
+  "Teaching the hamsters to type faster...",
+  "Untangling the internet cables...",
+  "Convincing the AI to stop overthinking...",
+];
+
 function hasMedia(payload: ReplyPayload): boolean {
   return Boolean(payload.mediaUrl) || (payload.mediaUrls?.length ?? 0) > 0;
 }
@@ -147,7 +160,8 @@ export async function dispatchPreparedSlackMessage(prepared: PreparedSlackMessag
       await ctx.setSlackThreadStatus({
         channelId: message.channel,
         threadTs: statusThreadTs,
-        status: "is typing...",
+        status: "is thinking...",
+        loadingMessages: DEFAULT_LOADING_MESSAGES,
       });
       if (typingReaction && message.ts) {
         await reactSlackMessage(message.channel, message.ts, typingReaction, {

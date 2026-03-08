@@ -1,12 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
-import { MANIFEST_KEY } from "../compat/legacy-names.js";
+import { LEGACY_MANIFEST_KEYS, MANIFEST_KEY } from "../compat/legacy-names.js";
 import { openBoundaryFileSync } from "../infra/boundary-file-read.js";
 import { isRecord } from "../utils.js";
 import type { PluginConfigUiHint, PluginKind } from "./types.js";
 
 export const PLUGIN_MANIFEST_FILENAME = "hive-gateway.plugin.json";
-export const PLUGIN_MANIFEST_FILENAMES = [PLUGIN_MANIFEST_FILENAME, "openclaw.plugin.json"] as const;
+export const PLUGIN_MANIFEST_FILENAMES = [
+  PLUGIN_MANIFEST_FILENAME,
+  "openclaw.plugin.json",
+] as const;
 
 export type PluginManifest = {
   id: string;
@@ -178,7 +181,22 @@ export function getPackageManifestMetadata(
   if (!manifest) {
     return undefined;
   }
-  return manifest[MANIFEST_KEY];
+  // Check primary key first, then fall back to legacy keys
+  const primary = (manifest as Record<string, unknown>)[MANIFEST_KEY] as
+    | OpenClawPackageManifest
+    | undefined;
+  if (primary) {
+    return primary;
+  }
+  for (const legacyKey of LEGACY_MANIFEST_KEYS) {
+    const legacy = (manifest as Record<string, unknown>)[legacyKey] as
+      | OpenClawPackageManifest
+      | undefined;
+    if (legacy) {
+      return legacy;
+    }
+  }
+  return undefined;
 }
 
 export function resolvePackageExtensionEntries(

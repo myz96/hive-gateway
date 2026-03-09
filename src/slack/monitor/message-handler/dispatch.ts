@@ -40,6 +40,15 @@ const DEFAULT_LOADING_MESSAGES = [
   "Convincing the AI to stop overthinking...",
 ];
 
+function shuffled<T>(arr: readonly T[]): T[] {
+  const copy = arr.slice();
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
 function hasMedia(payload: ReplyPayload): boolean {
   return Boolean(payload.mediaUrl) || (payload.mediaUrls?.length ?? 0) > 0;
 }
@@ -161,7 +170,7 @@ export async function dispatchPreparedSlackMessage(prepared: PreparedSlackMessag
         channelId: message.channel,
         threadTs: statusThreadTs,
         status: "is thinking...",
-        loadingMessages: DEFAULT_LOADING_MESSAGES,
+        loadingMessages: shuffled(DEFAULT_LOADING_MESSAGES),
       });
       if (typingReaction && message.ts) {
         await reactSlackMessage(message.channel, message.ts, typingReaction, {
